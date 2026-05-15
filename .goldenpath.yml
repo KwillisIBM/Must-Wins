@@ -1,61 +1,9 @@
-# Golden Path Configuration for fsm-must-wins-landing
-# This file tells the Golden Path deployment system how to build and deploy your app
-
-# App metadata
-name: fsm-must-wins-landing
-description: FSM Must Wins Landing Page - Vite React Application
-
-# Build configuration
-build:
-  # Use the Dockerfile in the root of the repo
-  dockerfile: Dockerfile
-  
-  # Build context is the root directory
-  context: .
-  
-  # Port your app listens on
-  port: 3000
-
-# Deployment configuration
-deploy:
-  # Number of replicas (pods) to run
-  replicas: 1
-  
-  # Resource limits
-  resources:
-    requests:
-      memory: "256Mi"
-      cpu: "100m"
-    limits:
-      memory: "512Mi"
-      cpu: "500m"
-  
-  # Health check configuration
-  health:
-    # Path for liveness probe
-    liveness: /healthz
-    # Path for readiness probe
-    readiness: /healthz
-    # Initial delay before checking (seconds)
-    initialDelaySeconds: 10
-    # How often to check (seconds)
-    periodSeconds: 10
-    # Timeout for each check (seconds)
-    timeoutSeconds: 3
-    # Number of failures before restart
-    failureThreshold: 3
-
-# OAuth2 proxy configuration (automatic IBM w3id authentication)
-oauth2:
-  enabled: true
-  # Allow access to health check without authentication
-  skipAuthPaths:
-    - /healthz
-
-# Environment variables (optional)
-env: []
-
-# Volumes (optional)
-volumes: []
+kind: frontend
+public: true
+oauth2: "on"
+port: 3000
+replicas: 1
+instana: true
+timeout: 120
 
 # Made with Bob
