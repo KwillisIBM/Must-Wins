@@ -1,0 +1,610 @@
+/* ─── Always show hamburger — Carbon hides it at lg breakpoint by default ── */
+.cds--header__menu-trigger {
+  display: flex !important;
+}
+
+/* ─── App shell ─────────────────────────────────────────────────────────── */
+.app-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f4f4f4;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.app-main {
+  padding-top: 3rem; /* clear 48px Carbon header */
+  flex: 1;
+}
+
+/* ─── Page heading ──────────────────────────────────────────────────────── */
+.arch-outer {
+  padding: 1rem 0 2rem;
+}
+
+.arch-title {
+  padding: 1rem 1.5rem 0.75rem;
+}
+
+.arch-heading {
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: #161616;
+  margin: 0 0 0.25rem;
+  letter-spacing: 0;
+}
+
+.arch-subtitle {
+  font-size: 0.75rem;
+  color: #525252;
+  margin: 0;
+}
+
+/* ─── Architecture CSS Grid ─────────────────────────────────────────────── */
+/*
+  Rule 2: distinct 16px gaps between ALL main columns ($spacing-05).
+  7 columns × 3 rows:
+    Row 1 → main boxes (shorter cols end here; taller cols span into row 2)
+    Row 2 → Data section (cols 3–5) + App/DataInt & CoreApps continuation
+    Row 3 → Foundation (cols 3–7)
+  DevProd (col 1) and Channels (col 2) span all 3 rows.
+*/
+.arch-layout {
+  display: grid;
+  grid-template-columns: 0.74fr 0.74fr 0.75fr 0.75fr 0.75fr 0.74fr 0.74fr;
+  grid-template-rows: 1fr auto auto;
+  gap: 16px;                          /* Rule 2: $spacing-05 between columns */
+  padding: 0 1.5rem 1.5rem;
+  min-width: 0;
+  min-height: calc(100vh - 10rem);
+}
+
+.arch-col--devprod     { grid-column: 1; grid-row: 1 / 4; }
+.arch-col--channels    { grid-column: 2; grid-row: 1 / 4; }
+.arch-col--expapis     { grid-column: 3; grid-row: 1; }
+.arch-col--bizproc     { grid-column: 4; grid-row: 1; }
+.arch-col--apps        { grid-column: 5; grid-row: 1; }
+.arch-col--appdataint  { grid-column: 6; grid-row: 1 / 3; }
+.arch-col--coreapps    { grid-column: 7; grid-row: 1 / 3; }
+.arch-data             { grid-column: 3 / 6; grid-row: 2; }
+.arch-foundation       { grid-column: 3 / 8; grid-row: 3; }
+
+@media (max-width: 1100px) {
+  .arch-layout {
+    grid-template-columns: minmax(100px, 0.74fr) minmax(100px, 0.74fr) minmax(105px, 0.75fr) minmax(105px, 0.75fr) minmax(105px, 0.75fr) minmax(100px, 0.74fr) minmax(100px, 0.74fr);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ─── Column wrapper ─────────────────────────────────────────────────────── */
+.arch-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+}
+
+/* ─── Main box ───────────────────────────────────────────────────────────── */
+.mainbox {
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  height: 100%;
+  min-height: 0;
+}
+
+/*
+  Rule 3: 4px solid top border per column.
+  Color comes from style={{ backgroundColor }} set inline in JSX.
+*/
+.mainbox-line {
+  height: 4px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* Column header: title + optional expand chevron */
+.mainbox-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 15px 10px 10px;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.mainbox-title {
+  font-size: 1.125rem;           /* 18px */
+  font-weight: 400;
+  color: #161616;
+  line-height: 1.25;
+  min-height: calc(1.125rem * 1.25 * 2); /* always reserve 2 lines of height */
+  word-break: break-word;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.mainbox-expand-wrap {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.mainbox-expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  color: #525252;
+  padding: 0;
+  transition: background-color 0.12s ease;
+}
+
+.mainbox-expand-btn:hover       { background-color: #e8e8e8; }
+.mainbox-expand-btn:focus-visible {
+  outline: 2px solid var(--cds-focus, #0f62fe);
+  outline-offset: -2px;
+}
+
+/*
+  Rule 2: 8px gap between sub-boxes ($spacing-03).
+  Rule 5: padding so text never touches edges.
+*/
+.mainbox-subboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;                         /* Rule 2: clear gap between sub-boxes */
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ─── Sub-box (Toggletip) ───────────────────────────────────────────────── */
+.subbox-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Make Carbon's toggletip container fill available flex space */
+.subbox-wrapper .cds--toggletip,
+.subbox-wrapper .cds--popover-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+}
+
+.subbox-btn {
+  flex: 1 !important;
+  width: 100% !important;
+  min-height: 72px !important;
+  border: none !important;
+  border-radius: 0 !important;
+  cursor: pointer;
+  /*
+    Rule 5: internal padding so text/icons never touch the edges.
+    12px all sides gives clean breathing room.
+  */
+  padding: 12px !important;
+  text-align: left !important;
+  /*
+    Flex column: text anchors top-left, icon anchors bottom-right.
+  */
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  transition: filter 0.12s ease;
+}
+
+.subbox-btn:hover          { filter: brightness(0.88); }
+.subbox-btn:focus:not(:focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
+}
+.subbox-btn:focus-visible  {
+  outline: 2px solid var(--cds-focus, #0f62fe) !important;
+  outline-offset: -2px !important;
+}
+
+.subbox-label {
+  font-size: 1rem;              /* 16px */
+  font-weight: 400;
+  line-height: 1.333;
+  word-break: break-word;
+  color: inherit;
+  display: block;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/*
+  Rule 5: icon bottom-right. The flex column with justify-content: space-between
+  means the icon sits in a separate row at the bottom. align-self: flex-end
+  pushes it to the right edge.
+*/
+.subbox-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  align-self: flex-end;          /* bottom-right */
+  flex-shrink: 0;
+  margin-top: 8px;
+}
+
+/* ─── Shared popover content ─────────────────────────────────────────────── */
+.data-popover-content,
+.foundation-popover-content {
+  padding: 16px;
+}
+
+/* Header popovers — 30% narrower than the default 22rem popover-desc width */
+.mainbox-popover-content {
+  padding: 16px;
+  max-width: 15.4rem;
+}
+
+.mainbox-popover-content .popover-desc {
+  max-width: 100%;
+}
+
+.popover-header {
+  font-size: 1.25rem;            /* 20px */
+  font-weight: 700 !important;
+  margin: 0 0 6px;
+  color: #ffffff;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.popover-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: #161616;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.popover-desc {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #161616;
+  white-space: pre-line;
+  margin: 0;
+  max-width: 22rem;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* Toggletips have a dark background — keep desc text light */
+.popover-body .popover-desc {
+  color: #f4f4f4;
+}
+
+/* ─── Labeled section (Data & Foundation) ───────────────────────────────── */
+/*
+  Rule 4: "Data" and "Foundation" labels are HORIZONTAL, left-aligned,
+  NOT rotated. The section-label-col sits to the left of the content
+  with a colored 3px left border and the label text beside it.
+*/
+.labeled-section {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  background-color: #ffffff;
+  padding: 0;
+  gap: 12px;
+  height: 100%;
+}
+
+.section-label-col {
+  display: flex;
+  flex-direction: row;            /* line | text — side by side horizontally */
+  align-items: flex-start;
+  gap: 8px;
+  flex-shrink: 0;
+  width: 9rem;                    /* fixed width so Data and Foundation content start at same x */
+  padding-right: 4px;
+}
+
+/* Vertical accent line — keeps Figma color indicator */
+.section-vertical-line {
+  width: 3px;
+  align-self: stretch;
+  flex-shrink: 0;
+  border-radius: 1px;
+}
+
+/*
+  Rule 4: plain horizontal text, no rotation, no writing-mode.
+*/
+.section-label {
+  font-size: 1.125rem;           /* 18px — matches mainbox-title */
+  font-weight: 400;
+  color: #161616;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  padding-top: 12px;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* ─── Data grid ─────────────────────────────────────────────────────────── */
+.data-grid-v2 {
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr 0.75fr 0.75fr 0.75fr;
+  grid-template-rows: 1fr auto;
+  gap: 4px;
+  flex: 1;
+  min-height: 144px;
+}
+
+/* Generic grid cell — flex column so DataItem stretches to fill */
+.data-cell {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Stack cell holds SQL / NoSQL / Vector with equal spacing */
+.data-cell--stack {
+  gap: 4px;
+}
+
+/* Popover as="div" participates as a flex child inside each cell */
+.data-popover-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.data-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  border: none;
+  border-radius: 0;
+  padding: 6px 6px 6px 12px;
+  cursor: pointer;
+  width: 100%;
+  flex: 1;
+  transition: filter 0.12s ease;
+  text-align: left;
+}
+
+.data-item:hover         { filter: brightness(0.88); }
+.data-item:focus:not(:focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
+}
+.data-item:focus-visible {
+  outline: 2px solid var(--cds-focus, #0f62fe);
+  outline-offset: 1px;
+}
+
+/* Lakehouse / Hadoop — top-left text, icon bottom-right */
+.data-item--with-icon {
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px;
+}
+
+/* Streaming / Integration / Security — rotated label, bottom-left */
+.data-item--rotated-label {
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 8px;
+}
+
+.data-item--rotated-label .data-item-label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+}
+
+/* Icon inside data items (Lakehouse / Hadoop) */
+.data-item-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  align-self: flex-end;
+  flex-shrink: 0;
+  margin-top: 8px;
+}
+
+.data-item-label {
+  font-size: 0.75rem;            /* 12px */
+  font-weight: 400;
+  color: #161616;
+  line-height: 1.3;
+  display: block;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* ─── Foundation section ─────────────────────────────────────────────────── */
+.foundation-items-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+/* Popover as="div" flex child */
+.foundation-popover-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.foundation-item {
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  /*
+    Rule 5: internal padding — text never touches the edge of the dark bar.
+  */
+  padding: 14px 20px;
+  cursor: pointer;
+  text-align: left;
+  flex: 1;
+  transition: filter 0.12s ease;
+}
+
+.foundation-item:hover         { filter: brightness(1.35); }
+.foundation-item:focus:not(:focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
+}
+.foundation-item:focus-visible {
+  outline: 2px solid var(--cds-focus, #0f62fe);
+  outline-offset: 1px;
+}
+
+.foundation-item-label {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.4;
+  display: block;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.foundation-popover-content {
+  padding: 16px;
+  max-width: min(90vw, 64rem);
+}
+
+.foundation-popover-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.foundation-popover-col p {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #525252;
+  white-space: pre-line;
+  margin: 0;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* ─── Dark mode overrides ────────────────────────────────────────────────── */
+.dark.app-root {
+  background-color: #161616;
+}
+
+.dark .mainbox {
+  background-color: #262626;
+}
+
+.dark .labeled-section {
+  background-color: #262626;
+}
+
+.dark .arch-heading {
+  color: #f4f4f4;
+}
+
+.dark .arch-subtitle {
+  color: #8d8d8d;
+}
+
+.dark .mainbox-title,
+.dark .section-label {
+  color: #f4f4f4;
+}
+
+.dark .mainbox-expand-btn {
+  color: #0f62fe;
+}
+
+.dark .mainbox-expand-btn:hover {
+  background-color: #393939;
+}
+
+/* Sub-box tile backgrounds → unified dark */
+.dark .subbox-btn {
+  background-color: #000000 !important;
+}
+
+.dark .data-item {
+  background-color: #000000 !important;
+}
+
+.dark .foundation-item {
+  background-color: #000000 !important;
+}
+
+/* Sub-box hover in dark mode — 20% lighter than black */
+.dark .subbox-btn:hover {
+  background-color: #333333 !important;
+  filter: none !important;
+}
+
+.dark .data-item:hover {
+  background-color: #333333 !important;
+  filter: none !important;
+}
+
+.dark .foundation-item:hover {
+  background-color: #333333 !important;
+  filter: none !important;
+}
+
+/* Sub-box text → match header text color */
+.dark .subbox-label,
+.dark .data-item-label,
+.dark .foundation-item-label {
+  color: #f4f4f4 !important;
+}
+
+/* Icons → #cacaca */
+.dark .subbox-icon,
+.dark .data-item-icon {
+  filter: brightness(0) invert(1) brightness(0.79) !important;
+}
+
+/* Popovers — Carbon g100 makes the popover shell dark; fix our text overrides */
+.dark .popover-title {
+  color: #f4f4f4;
+}
+
+.dark .popover-desc,
+.dark .foundation-popover-col p {
+  color: #f4f4f4;
+}
+
+/* Toggletips — Carbon inverts their background in g100; force it to match popovers */
+.dark .cds--toggletip-content {
+  background-color: #262626 !important;
+  color: #f4f4f4 !important;
+}
+
+/* Caret/tip — override Carbon's inverse token so the triangle matches the box */
+.dark .cds--toggletip {
+  --cds-background-inverse: #262626;
+  --cds-text-inverse: #f4f4f4;
+  --cds-icon-inverse: #f4f4f4;
+}
+
+.dark .cds--popover--caret .cds--popover-content::before,
+.dark .cds--popover--caret .cds--popover-content::after {
+  background-color: #262626 !important;
+}
+
+.dark .popover-header {
+  color: #f4f4f4;
+}
+
+/* Core Applications top line and Foundation left line → IBM Orange in dark mode only */
+.dark .mainbox-line[data-col="coreapps"] {
+  background-color: #FF832B !important;
+}
+
+.dark .arch-foundation .section-vertical-line {
+  background-color: #FF832B !important;
+}

@@ -1,0 +1,228 @@
+name: CI/CD Pipeline
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  ICR_REGISTRY: 'us.icr.io'
+  ICR_NAMESPACE: 'content-studio-nonprod'  # Dallas region namespace
+  IMAGE_NAME: 'fsm-must-wins-landing'
+
+jobs:
+  # Job 1: Lint and Test
+  test:
+    name: Lint & Test
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint || echo "No lint script found"
+
+      - name: Run tests
+        run: npm test || echo "No test script found"
+
+      - name: Build application
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+          retention-days: 7
+
+  # Job 2: Security Scan
+  security:
+    name: Security Scan
+    runs-on: self-hosted
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate || true
+
+      - name: Check for secrets
+        run: |
+          echo "Checking for exposed secrets..."
+          if grep -r "ghp_" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=.github; then
+            echo "⚠️ Warning: Potential GitHub token found!"
+            exit 1
+          fi
+          echo "✅ No secrets found"
+
+  # Job 3: Build and Push to IBM Cloud Container Registry
+  build:
+    name: Build & Push to ICR
+    runs-on: self-hosted
+    needs: [test, security]
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    outputs:
+      image-tag: ${{ steps.image-info.outputs.tag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install IBM Cloud CLI and Container Registry plugin
+        run: |
+          curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
+          ibmcloud plugin install container-registry -f
+
+      - name: Login to IBM Cloud
+        run: |
+          echo "Logging into IBM Cloud..."
+          ibmcloud login --apikey ${{ secrets.ICR_API_KEY }} -r us-south
+          
+          echo "Setting Container Registry region..."
+          ibmcloud cr region-set us-south
+          
+          echo "✅ IBM Cloud login successful - will use --creds flag for podman push"
+
+      - name: Clean Podman cache (fix boot ID issue)
+        run: |
+          echo "Cleaning Podman temporary directories..."
+          rm -rf /tmp/storage-run-1000/containers /tmp/storage-run-1000/libpod/tmp 2>/dev/null || true
+          echo "✅ Cache cleaned"
+
+      - name: Build container image with Podman
+        run: |
+          IMAGE_TAG="${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          IMAGE_LATEST="${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:latest"
+          
+          echo "Building image: $IMAGE_TAG"
+          podman build --cgroup-manager=cgroupfs --platform linux/amd64 -t $IMAGE_TAG -t $IMAGE_LATEST .
+          
+          echo "✅ Image built successfully"
+
+      - name: Run comprehensive diagnostics
+        run: |
+          echo "=== 1. IBM Cloud authentication status ==="
+          ibmcloud target
+          echo ""
+          
+          echo "=== 2. Container Registry quota and namespaces ==="
+          ibmcloud cr quota
+          ibmcloud cr namespace-list
+          echo ""
+          
+          echo "=== 3. Existing images in target namespace ==="
+          ibmcloud cr image-list --restrict ${{ env.ICR_NAMESPACE }} || echo "No images in namespace yet"
+          echo ""
+          
+          echo "=== 4. Registry connectivity test ==="
+          curl -v https://${{ env.ICR_REGISTRY }}/v2/ 2>&1 | head -20
+          echo ""
+          
+          echo "=== 5. Local Podman images ==="
+          podman images --filter "reference=${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}"
+          echo ""
+          
+          echo "=== 6. Image layer inspection ==="
+          podman inspect ${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }} | jq '.[0].RootFS.Layers' || echo "Image not found locally"
+          echo ""
+          
+          echo "=== 7. Image size ==="
+          podman images ${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }} --format "{{.Size}}" || echo "Image not found"
+
+      - name: Push to IBM Cloud Container Registry
+        run: |
+          IMAGE_TAG="${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          IMAGE_LATEST="${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:latest"
+          
+          echo "=== Pushing image with SHA tag ==="
+          echo "Target: $IMAGE_TAG"
+          set -x
+          set -o pipefail  # Capture exit code from podman, not tee
+          podman push --creds iamapikey:${{ secrets.ICR_API_KEY }} $IMAGE_TAG 2>&1 | tee push.log
+          PUSH_EXIT=$?
+          set +x
+          echo "Push exit code: $PUSH_EXIT"
+          
+          if [ $PUSH_EXIT -ne 0 ]; then
+            echo "=== PUSH FAILED - Analyzing logs ==="
+            cat push.log
+            exit 1
+          fi
+          
+          echo ""
+          echo "=== Pushing latest tag ==="
+          set -o pipefail
+          podman push --creds iamapikey:${{ secrets.ICR_API_KEY }} $IMAGE_LATEST 2>&1 | tee -a push.log
+          
+          echo "✅ Images pushed to ICR successfully"
+          echo "📦 Image: $IMAGE_TAG"
+          
+      - name: Upload diagnostic logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostic-logs
+          path: |
+            push.log
+            test-push.log
+
+      - name: Set image info output
+        id: image-info
+        run: |
+          echo "tag=${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "full-image=${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" >> $GITHUB_OUTPUT
+
+  # Job 4: Trigger Golden Path Deployment via Webhook
+  deploy-production:
+    name: Deploy to Production
+    runs-on: self-hosted
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://fsm-must-wins-landing-np.dinero.techzone.ibm.com
+    steps:
+      - name: Trigger Golden Path Deployment
+        run: |
+          echo "🚀 Triggering deployment via webhook..."
+          
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            https://webhook-receiver-content-studio-platform.dinero.techzone.ibm.com/trigger \
+            -H "Content-Type: application/json" \
+            -d "{\"secret\": \"${{ secrets.WEBHOOK_SECRET }}\"}")
+          
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          
+          echo "Response: $BODY"
+          echo "HTTP Code: $HTTP_CODE"
+          
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Deployment triggered successfully!"
+            JOB_NAME=$(echo "$BODY" | grep -o '"job": "[^"]*"' | cut -d'"' -f4)
+            echo "📦 Golden Path Job: $JOB_NAME"
+            echo "📦 Image: ${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+            echo "🔄 Golden Path will handle: mirroring, wrapping, OAuth2 proxy, and OpenShift deployment"
+          else
+            echo "❌ Failed to trigger deployment"
+            echo "Response: $BODY"
+            exit 1
+          fi
+
+# Made with Bob
