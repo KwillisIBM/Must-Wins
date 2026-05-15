@@ -7,8 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-# Clear npm cache and use --force to avoid ETXTBSY errors with esbuild
-RUN npm cache clean --force && npm ci --prefer-offline --no-audit
+RUN npm install
 
 # Copy source code
 COPY . .
