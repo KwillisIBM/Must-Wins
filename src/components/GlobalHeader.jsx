@@ -40,8 +40,6 @@ export default function GlobalHeader({ isDark, onToggleDark }) {
             <SideNavMenuItem href="#">WxW Must Wins Tutor</SideNavMenuItem>
             <SideNavMenuItem href="https://navattic-demos-np.dinero.techzone.ibm.com/" target="_blank" rel="noopener noreferrer">Must Wins Demo Library</SideNavMenuItem>
           </SideNavMenu>
-          <SideNavMenuItem href="#">About this page</SideNavMenuItem>
-          <SideNavMenuItem href="#">Feedback</SideNavMenuItem>
           <SideNavMenuItem
             onClick={(e) => {
               e.preventDefault();
