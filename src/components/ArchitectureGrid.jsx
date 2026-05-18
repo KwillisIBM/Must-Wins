@@ -13,7 +13,7 @@ export default function ArchitectureGrid() {
         <div className="arch-title">
           <h1 className="arch-heading">FSM Must Wins Architecture</h1>
           <p className="arch-subtitle">
-            Click any component to explore capabilities
+            Click any component or expand the header arrows for more details
           </p>
         </div>
 
