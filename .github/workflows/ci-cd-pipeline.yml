@@ -105,7 +105,9 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+          # Use production Dockerfile that expects pre-built dist/
+          docker build -f Dockerfile.prod \
+                       -t ${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
                        -t ${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:latest \
                        .
 
