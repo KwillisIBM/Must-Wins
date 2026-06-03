@@ -132,7 +132,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment:
       name: production
-      url: https://${{ env.IMAGE_NAME }}-content-studio-platform.dinero.techzone.ibm.com
+      url: https://${{ env.IMAGE_NAME }}-np.dinero.techzone.ibm.com
     steps:
       - name: Trigger Golden Path Deployment
         run: |
@@ -155,7 +155,7 @@ jobs:
             echo "✅ Deployment triggered successfully!"
             JOB_NAME=$(echo "$BODY" | grep -o '"job": "[^"]*"' | cut -d'"' -f4)
             echo "📦 Golden Path Job: $JOB_NAME"
-            echo "🔗 App will be available at: https://${{ env.IMAGE_NAME }}-content-studio-platform.dinero.techzone.ibm.com"
+            echo "🔗 App will be available at: https://${{ env.IMAGE_NAME }}-np.dinero.techzone.ibm.com"
             echo ""
             echo "⏳ Deployment typically takes 5-10 minutes"
             echo "📊 Monitor progress in OpenShift console"

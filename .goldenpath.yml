@@ -5,6 +5,7 @@ port: 3000
 replicas: 1
 instana: true
 timeout: 120
+image: us.icr.io/content-studio-nonprod/fsm-must-wins-landing:latest
 
 # Made with Bob
 
