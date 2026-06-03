@@ -138,12 +138,13 @@ jobs:
         run: |
           echo "🚀 Triggering deployment via webhook..."
           echo "Golden Path will pull the pre-built image from ICR"
-          echo "Image: ${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          IMAGE_URL="${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          echo "Image: $IMAGE_URL"
           
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             https://webhook-receiver-content-studio-platform.dinero.techzone.ibm.com/trigger \
             -H "Content-Type: application/json" \
-            -d "{\"secret\": \"${{ secrets.WEBHOOK_SECRET }}\"}")
+            -d "{\"secret\": \"${{ secrets.WEBHOOK_SECRET }}\", \"image_url\": \"$IMAGE_URL\"}")
           
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
           BODY=$(echo "$RESPONSE" | head -n-1)
