@@ -6,6 +6,7 @@ replicas: 1
 instana: true
 timeout: 120
 image: us.icr.io/content-studio-nonprod/fsm-must-wins-landing:latest
+build: false
 
 # Made with Bob
 
