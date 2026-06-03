@@ -95,6 +95,12 @@ jobs:
           echo "Logging in to ICR..."
           echo "${{ secrets.ICR_API_KEY }}" | docker login -u iamapikey --password-stdin ${{ env.ICR_REGISTRY }}
 
+      - name: Prepare build context
+        run: |
+          # Use production dockerignore that allows dist/ folder
+          cp .dockerignore.prod .dockerignore
+          ls -la dist/ || echo "Warning: dist folder not found"
+
       - name: Generate image metadata
         id: meta
         run: |
