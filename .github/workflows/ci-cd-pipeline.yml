@@ -72,11 +72,55 @@ jobs:
           fi
           echo "✅ No secrets found"
 
-  # Job 3: Deploy to Production (Golden Path builds the image)
+  # Job 3: Build and Push Docker Image to ICR
+  build-push:
+    name: Build & Push to ICR
+    runs-on: self-hosted
+    needs: [test, security]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+
+      - name: Log in to IBM Cloud Container Registry
+        run: |
+          echo "Logging in to ICR..."
+          echo "${{ secrets.ICR_API_KEY }}" | docker login -u iamapikey --password-stdin ${{ env.ICR_REGISTRY }}
+
+      - name: Generate image metadata
+        id: meta
+        run: |
+          IMAGE_TAG="${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          IMAGE_LATEST="${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:latest"
+          echo "tags=$IMAGE_TAG,$IMAGE_LATEST" >> $GITHUB_OUTPUT
+          echo "Building image: $IMAGE_TAG"
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+                       -t ${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:latest \
+                       .
+
+      - name: Push Docker image to ICR
+        run: |
+          echo "Pushing image to ICR..."
+          docker push ${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:latest
+          echo "✅ Image pushed successfully!"
+
+  # Job 4: Deploy to Production (Golden Path pulls the image)
   deploy-production:
     name: Deploy to Production
     runs-on: self-hosted
-    needs: [test, security]
+    needs: [test, security, build-push]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment:
       name: production
@@ -85,7 +129,8 @@ jobs:
       - name: Trigger Golden Path Deployment
         run: |
           echo "🚀 Triggering deployment via webhook..."
-          echo "Golden Path will build the image from source code"
+          echo "Golden Path will pull the pre-built image from ICR"
+          echo "Image: ${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
           
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             https://webhook-receiver-content-studio-platform.dinero.techzone.ibm.com/trigger \
