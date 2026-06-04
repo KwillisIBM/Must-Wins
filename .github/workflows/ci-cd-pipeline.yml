@@ -8,8 +8,8 @@ on:
 
 env:
   NODE_VERSION: '20'
-  ICR_REGISTRY: 'us.icr.io'
-  ICR_NAMESPACE: 'content-studio-nonprod'
+  OPENSHIFT_REGISTRY: 'image-registry.openshift-image-registry.svc:5000'
+  OPENSHIFT_NAMESPACE: 'content-studio-platform'
   IMAGE_NAME: ${{ github.event.repository.name }}
 
 jobs:
@@ -72,9 +72,9 @@ jobs:
           fi
           echo "✅ No secrets found"
 
-  # Job 3: Build and Push Docker Image to ICR
+  # Job 3: Build and Push Docker Image to OpenShift Registry
   build-push:
-    name: Build & Push to ICR
+    name: Build & Push to OpenShift
     runs-on: self-hosted
     needs: [test, security]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -90,10 +90,10 @@ jobs:
           name: build-artifacts
           path: dist/
 
-      - name: Log in to IBM Cloud Container Registry
+      - name: Log in to OpenShift Registry
         run: |
-          echo "Logging in to ICR..."
-          echo "${{ secrets.ICR_API_KEY }}" | docker login -u iamapikey --password-stdin ${{ env.ICR_REGISTRY }}
+          echo "Logging in to OpenShift internal registry..."
+          echo "${{ secrets.OPENSHIFT_TOKEN }}" | docker login -u unused --password-stdin ${{ env.OPENSHIFT_REGISTRY }}
 
       - name: Prepare build context
         run: |
@@ -104,8 +104,8 @@ jobs:
       - name: Generate image metadata
         id: meta
         run: |
-          IMAGE_TAG="${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          IMAGE_LATEST="${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:latest"
+          IMAGE_TAG="${{ env.OPENSHIFT_REGISTRY }}/${{ env.OPENSHIFT_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          IMAGE_LATEST="${{ env.OPENSHIFT_REGISTRY }}/${{ env.OPENSHIFT_NAMESPACE }}/${{ env.IMAGE_NAME }}:latest"
           echo "tags=$IMAGE_TAG,$IMAGE_LATEST" >> $GITHUB_OUTPUT
           echo "Building image: $IMAGE_TAG"
 
@@ -113,16 +113,16 @@ jobs:
         run: |
           # Use production Dockerfile that expects pre-built dist/
           docker build -f Dockerfile.prod \
-                       -t ${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
-                       -t ${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:latest \
+                       -t ${{ env.OPENSHIFT_REGISTRY }}/${{ env.OPENSHIFT_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+                       -t ${{ env.OPENSHIFT_REGISTRY }}/${{ env.OPENSHIFT_NAMESPACE }}/${{ env.IMAGE_NAME }}:latest \
                        .
 
-      - name: Push Docker image to ICR
+      - name: Push Docker image to OpenShift Registry
         run: |
-          echo "Pushing image to ICR..."
-          docker push ${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          docker push ${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:latest
-          echo "✅ Image pushed successfully!"
+          echo "Pushing image to OpenShift internal registry..."
+          docker push ${{ env.OPENSHIFT_REGISTRY }}/${{ env.OPENSHIFT_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ env.OPENSHIFT_REGISTRY }}/${{ env.OPENSHIFT_NAMESPACE }}/${{ env.IMAGE_NAME }}:latest
+          echo "✅ Image pushed successfully to OpenShift!"
 
   # Job 4: Deploy to Production (Golden Path pulls the image)
   deploy-production:
@@ -137,8 +137,8 @@ jobs:
       - name: Trigger Golden Path Deployment
         run: |
           echo "🚀 Triggering deployment via webhook..."
-          echo "Golden Path will pull the pre-built image from ICR"
-          IMAGE_URL="${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          echo "Golden Path will pull the pre-built image from OpenShift registry"
+          IMAGE_URL="${{ env.OPENSHIFT_REGISTRY }}/${{ env.OPENSHIFT_NAMESPACE }}/${{ env.IMAGE_NAME }}:latest"
           echo "Image: $IMAGE_URL"
           
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
