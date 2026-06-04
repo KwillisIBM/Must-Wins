@@ -6,7 +6,7 @@ set -e
 
 IMAGE_NAME="fsm-must-wins-landing"
 ICR_IMAGE="us.icr.io/content-studio-nonprod/${IMAGE_NAME}:latest"
-NAMESPACE="content-studio-platform"
+NAMESPACE="content-studio-mirrors"
 
 echo "🔄 Updating deployment to use ICR image..."
 echo "Image: ${ICR_IMAGE}"
