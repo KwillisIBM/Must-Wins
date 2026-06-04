@@ -123,14 +123,10 @@ jobs:
           docker push ${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           docker push ${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:latest
           echo "✅ Image pushed successfully!"
-
-      - name: Update OpenShift Deployment to use ICR image
-        run: |
-          echo "Updating deployment to use ICR image..."
-          oc set image deployment/${{ env.IMAGE_NAME }} \
-            app=${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:latest \
-            -n content-studio-platform
-          echo "✅ Deployment updated to use ICR image!"
+          echo ""
+          echo "⚠️  IMPORTANT: Golden Path builds from source by default"
+          echo "📝 After deployment completes, manually update the image with:"
+          echo "   oc set image deployment/${{ env.IMAGE_NAME }} app=${{ env.ICR_REGISTRY }}/${{ env.ICR_NAMESPACE }}/${{ env.IMAGE_NAME }}:latest -n content-studio-platform"
 
   # Job 4: Deploy to Production (Trigger Golden Path sync)
   deploy-production:
