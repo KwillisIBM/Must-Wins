@@ -294,6 +294,30 @@
   max-width: 100%;
 }
 
+.popover-uc-link-row {
+  margin-top: 0.875rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.popover-uc-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #0f62fe;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: 'IBM Plex Sans', sans-serif;
+  padding: 0;
+}
+
+.popover-uc-link:hover {
+  text-decoration: underline;
+}
+
 .popover-header {
   font-size: 1.25rem; /* 20px */
   font-weight: 700 !important;

@@ -73,6 +73,7 @@ export const COLUMNS = [
     hasPopover: true,
     spanAllRows: false,
     tallHeight: false,
+    mustWinCategory: 'Automation',
     description: 'Modern application integration connects systems, processes, and partners across hybrid environments. Secure, API‑led and event‑driven integration enables faster innovation without increasing operational risk.\n\nCore to Mod (Integration)\n• Datapower\n• ACE\n• API Connect\n• CP for Integration\n\nIntegrate Applications\n• webMethods Hybrid Integration\n• API Connect',
   },
   {
@@ -82,6 +83,7 @@ export const COLUMNS = [
     hasPopover: true,
     spanAllRows: false,
     tallHeight: false,
+    mustWinCategory: 'Automation',
     description: 'Business automation modernizes workflows by combining process intelligence, content, and AI‑driven decisioning. Agentic AI unlocks new levels of productivity by enabling smarter, more autonomous operations.\n\nCore to Mod (Business Automation)\n• CP for BA\n• Filenet\n• ODM\n• CMOD\n• BAW\n• MyEnvinio\n• WDG\n\nAgentic/AI Led Automation\n• WatsonX Orchestrate',
   },
   {
@@ -91,6 +93,7 @@ export const COLUMNS = [
     hasPopover: true,
     spanAllRows: false,
     tallHeight: false,
+    mustWinCategory: 'Automation',
     description: 'Optimizing application performance and technology investments ensures modernization delivers measurable business value.\n\nAutomate Application Resiliency\n• Turbonomic, Instana, Concert\n• Sev One, Ansible, WCA for Ansible\n\nAutomate and Optimize Technology Investments\n• Apptio\n• Cloudablity\n• Turbonomic\n\nCore to Mod (App Runtime)\n• EAR\n• WCA for Java\n• Jsphere Suite',
   },
   {
@@ -100,6 +103,7 @@ export const COLUMNS = [
     hasPopover: true,
     spanAllRows: false,
     tallHeight: true,
+    mustWinCategory: 'Data',
     description: 'The central nervous system. Modern integration unlocks real‑time access to core data without disrupting systems of record. By streaming information instead of copying raw data, clients can power digital experiences and AI with lower cost and complexity.\n\nCore to Mod (Integration)\n• MQ\n• C:D, SFG\n\nCode Mod (Data)\n• CDC\n• Datastage\n\nIBM Z / Data\n• zDIH\n• Zconnect\n• DVM',
   },
   {
@@ -109,6 +113,7 @@ export const COLUMNS = [
     hasPopover: true,
     spanAllRows: false,
     tallHeight: true,
+    mustWinCategory: 'Transaction Processing',
     description: 'Automating development and operations on IBM Z enables faster, safer modernization of core systems. AI‑assisted tooling and intelligent observability reduce technical debt while keeping mission‑critical workloads highly resilient.\n\nAutomate Z Development\n• Code Asst for Z\n• WatsonX Assistant\n\nSimplify Z Operations\n• Omegamon, Instana\n• Intellimagic\n• WatsonX Assistant\n• Hashicorp\n• Concert\n• ML for Z',
   },
 ];

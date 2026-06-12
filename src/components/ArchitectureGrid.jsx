@@ -6,7 +6,7 @@ import { COLUMNS } from "../data/componentData";
 
 const colById = (id) => COLUMNS.find((c) => c.id === id);
 
-export default function ArchitectureGrid() {
+export default function ArchitectureGrid({ onNavigateToUseCases }) {
   return (
     <Grid fullWidth className="arch-outer">
       <Column lg={16} md={8} sm={4}>
@@ -32,37 +32,37 @@ export default function ArchitectureGrid() {
         <div className="arch-layout">
           {/* Col 1 — Developer Productivity (spans all rows) */}
           <div className="arch-col arch-col--devprod arch-col--full-span">
-            <MainBox column={colById("devprod")} />
+            <MainBox column={colById("devprod")} onNavigateToUseCases={onNavigateToUseCases} />
           </div>
 
           {/* Col 2 — Channels (spans all rows) */}
           <div className="arch-col arch-col--channels arch-col--full-span">
-            <MainBox column={colById("channels")} />
+            <MainBox column={colById("channels")} onNavigateToUseCases={onNavigateToUseCases} />
           </div>
 
           {/* Col 3 — Experience APIs (row 1 only) */}
           <div className="arch-col arch-col--expapis arch-col--short">
-            <MainBox column={colById("expapis")} />
+            <MainBox column={colById("expapis")} onNavigateToUseCases={onNavigateToUseCases} />
           </div>
 
           {/* Col 4 — Business Processes (row 1 only) */}
           <div className="arch-col arch-col--bizproc arch-col--short">
-            <MainBox column={colById("bizproc")} />
+            <MainBox column={colById("bizproc")} onNavigateToUseCases={onNavigateToUseCases} />
           </div>
 
           {/* Col 5 — Applications (row 1 only) */}
           <div className="arch-col arch-col--apps arch-col--short">
-            <MainBox column={colById("apps")} />
+            <MainBox column={colById("apps")} onNavigateToUseCases={onNavigateToUseCases} />
           </div>
 
           {/* Col 6 — App/Data Integration (rows 1–2) */}
           <div className="arch-col arch-col--appdataint arch-col--tall">
-            <MainBox column={colById("appdataint")} />
+            <MainBox column={colById("appdataint")} onNavigateToUseCases={onNavigateToUseCases} />
           </div>
 
           {/* Col 7 — Core Applications (rows 1–2) */}
           <div className="arch-col arch-col--coreapps arch-col--tall">
-            <MainBox column={colById("coreapps")} />
+            <MainBox column={colById("coreapps")} onNavigateToUseCases={onNavigateToUseCases} />
           </div>
 
           {/* Row 2 — Data section (cols 3–5) */}

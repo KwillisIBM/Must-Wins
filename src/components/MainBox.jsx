@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Popover, PopoverContent } from '@carbon/react';
-import { ChevronDown } from '@carbon/icons-react';
+import { ChevronDown, ArrowRight } from '@carbon/icons-react';
 import SubBox from './SubBox';
 import { SUB_BOXES } from '../data/componentData';
 
-export default function MainBox({ column }) {
+export default function MainBox({ column, onNavigateToUseCases }) {
   const [open, setOpen] = useState(false);
 
   const subBoxes = SUB_BOXES.filter((s) => s.group === column.id);
@@ -40,6 +40,20 @@ export default function MainBox({ column }) {
               <PopoverContent className="mainbox-popover-content">
                 <h6 className="popover-title">{column.label}</h6>
                 <p className="popover-desc">{column.description}</p>
+                {column.mustWinCategory && onNavigateToUseCases && (
+                  <div className="popover-uc-link-row">
+                    <button
+                      type="button"
+                      className="popover-uc-link"
+                      onClick={() => {
+                        setOpen(false);
+                        onNavigateToUseCases({ mustWin: column.mustWinCategory });
+                      }}
+                    >
+                      Use Cases <ArrowRight size={14} />
+                    </button>
+                  </div>
+                )}
               </PopoverContent>
             </Popover>
           </div>

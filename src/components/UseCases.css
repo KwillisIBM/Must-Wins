@@ -1,0 +1,794 @@
+/* ─── Page shell ─────────────────────────────────────────────────────────── */
+.uc-page {
+  padding: 1.5rem 1.5rem 3rem;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.uc-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.uc-page-header-text {
+  flex: 1;
+}
+
+.uc-page-title {
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: #161616;
+  margin: 0 0 0.25rem;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.uc-page-subtitle {
+  font-size: 0.75rem;
+  color: #525252;
+  margin: 0;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.uc-loading {
+  font-size: 0.875rem;
+  color: #525252;
+  font-family: 'IBM Plex Sans', sans-serif;
+  padding: 2rem 0;
+}
+
+/* ─── Page title row (title + legend icon) ──────────────────────────────── */
+.uc-page-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.uc-page-title-row .uc-page-title {
+  margin: 0;
+}
+
+.uc-legend-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #525252;
+  padding: 2px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  transition: color 0.1s, background-color 0.1s;
+}
+
+.uc-legend-btn:hover {
+  color: #161616;
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Legend popover */
+.uc-legend-popover {
+  padding: 0.875rem 1rem;
+  min-width: 220px;
+}
+
+.uc-legend-heading {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #525252;
+  font-family: 'IBM Plex Sans', sans-serif;
+  margin: 0 0 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.32px;
+}
+
+.uc-legend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.uc-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.uc-legend-swatch {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 2px;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.uc-legend-label {
+  font-size: 0.8125rem;
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: #161616;
+}
+
+/* ─── Filters bar ────────────────────────────────────────────────────────── */
+.uc-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.uc-filters .cds--select {
+  min-width: 160px;
+  flex: 1;
+}
+
+.uc-filters .cds--text-input-wrapper {
+  min-width: 160px;
+  flex: 1;
+}
+
+.uc-filter-clear {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #0f62fe;
+  font-size: 0.8125rem;
+  font-family: 'IBM Plex Sans', sans-serif;
+  padding: 0.375rem 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-bottom: 0.125rem;
+}
+
+.uc-filter-clear:hover {
+  text-decoration: underline;
+}
+
+/* ─── Use case list ──────────────────────────────────────────────────────── */
+.uc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* ─── Row ────────────────────────────────────────────────────────────────── */
+.uc-row {
+  background-color: #ffffff;
+}
+
+.uc-row--expanded .uc-row-header {
+  filter: brightness(0.95);
+}
+
+.uc-row-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  transition: background-color 0.12s ease;
+}
+
+.uc-row-header:hover {
+  filter: brightness(0.95);
+}
+
+/* The main clickable expand area (name + tags) */
+.uc-row-expand-area {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 0 0.875rem 1rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.uc-row-expand-area:focus-visible {
+  outline: 2px solid #0f62fe;
+  outline-offset: -2px;
+}
+
+.uc-row-name {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #161616;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.uc-row-tags {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.uc-row-date {
+  font-size: 0.75rem;
+  color: #525252;
+  font-family: 'IBM Plex Sans', sans-serif;
+  white-space: nowrap;
+  padding-left: 0.25rem;
+}
+
+.dark .uc-row-date {
+  color: #6f6f6f;
+}
+
+/* Chevron toggle button */
+.uc-row-chevron-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #525252;
+  padding: 0.875rem 1rem 0.875rem 0.25rem;
+}
+
+/* ─── Social icons (row header) ──────────────────────────────────────────── */
+.uc-row-social {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.uc-social-count {
+  font-size: 0.875rem;
+  color: #525252;
+  font-family: 'IBM Plex Sans', sans-serif;
+  min-width: 1ch;
+  text-align: right;
+}
+
+.uc-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #525252;
+  padding: 2px;
+  border-radius: 2px;
+  transition: color 0.12s ease, background-color 0.12s ease;
+}
+
+.uc-icon-btn:hover {
+  color: #161616;
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+.uc-icon-btn--active {
+  color: #da1e28;
+}
+
+.uc-icon-btn--active:hover {
+  color: #da1e28;
+}
+
+.uc-chat-icon {
+  color: #525252;
+}
+
+
+/* ─── Expanded drawer: 3-column layout ──────────────────────────────────── */
+.uc-drawer {
+  display: grid;
+  grid-template-columns: 220px 1fr 320px;
+  min-height: 380px;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* ─── Left: tree nav column ──────────────────────────────────────────────── */
+.uc-tree-col {
+  border-right: 1px solid #e0e0e0;
+  padding: 0;
+  overflow-y: auto;
+}
+
+/* ─── Custom tree nav ────────────────────────────────────────────────────── */
+.uc-tree-nav {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.uc-tree-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.4375rem 1rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.875rem;
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: #161616;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background-color 0.1s ease;
+}
+
+.uc-tree-item--d1 {
+  padding-left: 2.5rem;
+}
+
+.uc-tree-item:hover {
+  background-color: #e8e8e8;
+}
+
+.uc-tree-item--active {
+  background-color: #e8e8e8;
+  box-shadow: inset 2px 0 0 #0f62fe;
+  font-weight: 600;
+}
+
+.uc-tree-item--active:hover {
+  background-color: #d1d1d1;
+}
+
+.uc-tree-icon {
+  flex-shrink: 0;
+  color: #525252;
+}
+
+.uc-tree-item--active .uc-tree-icon {
+  color: #0f62fe;
+}
+
+/* Branch row: chevron + icon + label */
+.uc-tree-branch {
+  gap: 0.25rem;
+}
+
+.uc-tree-branch-chevron {
+  display: flex;
+  align-items: center;
+  color: #525252;
+  flex-shrink: 0;
+}
+
+/* Override Carbon TreeView to fill the column */
+.uc-tree-col .cds--tree {
+  width: 100%;
+}
+
+/* ─── Center: content column ─────────────────────────────────────────────── */
+.uc-content-col {
+  padding: 1.5rem;
+  overflow-y: auto;
+  border-right: 1px solid #e0e0e0;
+}
+
+.uc-content-area {
+  max-width: 640px;
+}
+
+.uc-content-empty {
+  color: #8d8d8d;
+  font-size: 0.875rem;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.uc-content-heading {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #161616;
+  margin: 0 0 1rem;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.uc-content-body {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #393939;
+  white-space: pre-line;
+  margin: 0 0 1.5rem;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.uc-content-summary {
+  margin-bottom: 1.5rem;
+  color: #525252;
+  font-style: italic;
+}
+
+/* ─── Content links ──────────────────────────────────────────────────────── */
+.uc-links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.uc-link-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.uc-link-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0f62fe;
+  text-decoration: none;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.uc-link-title:hover {
+  text-decoration: underline;
+  color: #0043ce;
+}
+
+.uc-link-icon {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.uc-link-desc {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #525252;
+  margin: 0;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* Carbon ProgressIndicator vertical layout */
+.uc-content-area .cds--progress-indicator--vertical {
+  padding-left: 0.5rem;
+}
+
+/* ─── Right: Comments column ─────────────────────────────────────────────── */
+.uc-comments-col {
+  overflow-y: auto;
+}
+
+.uc-comments-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 380px;
+  max-height: 600px;
+  overflow: hidden;
+}
+
+.uc-comments-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem 0.625rem;
+  border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
+}
+
+.uc-comments-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #161616;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.uc-social-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.uc-comments-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+  scroll-behavior: smooth;
+}
+
+.uc-comments-empty {
+  font-size: 0.8125rem;
+  color: #8d8d8d;
+  margin: 0;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.uc-comment {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.uc-comment-author {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #525252;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.uc-comment-text {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #161616;
+  margin: 0;
+  word-break: break-word;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.uc-comments-input {
+  padding: 0.75rem 1rem 1rem;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.uc-comment-submit {
+  align-self: flex-end;
+}
+
+/* ─── Category header colors — light mode ────────────────────────────────── */
+.uc-header--automation    { background-color: #e8daff; }
+.uc-header--data          { background-color: #bae6ff; }
+.uc-header--hybrid        { background-color: #d0e2ff; }
+.uc-header--transaction   { background-color: #dde1e6; }
+.uc-header--default       { background-color: #f4f4f4; }
+
+.uc-row--expanded .uc-header--automation  { background-color: #d4bbff; }
+.uc-row--expanded .uc-header--data        { background-color: #82cfff; }
+.uc-row--expanded .uc-header--hybrid      { background-color: #a6c8ff; }
+.uc-row--expanded .uc-header--transaction { background-color: #c1c7cd; }
+
+/* ─── Category header colors — dark mode ─────────────────────────────────── */
+.dark .uc-header--automation    { background-color: #31135e; }
+.dark .uc-header--data          { background-color: #003a6d; }
+.dark .uc-header--hybrid        { background-color: #001d6c; }
+.dark .uc-header--transaction   { background-color: #393939; }
+.dark .uc-header--default       { background-color: #262626; }
+
+.dark .uc-row--expanded .uc-header--automation  { background-color: #491d8b; }
+.dark .uc-row--expanded .uc-header--data        { background-color: #012749; }
+.dark .uc-row--expanded .uc-header--hybrid      { background-color: #002d9c; }
+.dark .uc-row--expanded .uc-header--transaction { background-color: #4c4c4c; }
+
+/* ─── Dark mode — page & row shell ──────────────────────────────────────── */
+.dark .uc-page-title    { color: #f4f4f4; }
+.dark .uc-page-subtitle { color: #8d8d8d; }
+.dark .uc-loading       { color: #8d8d8d; }
+
+/* ─── Dark mode — legend + filters ──────────────────────────────────────── */
+.dark .uc-legend-btn           { color: #8d8d8d; }
+.dark .uc-legend-btn:hover     { color: #f4f4f4; background-color: rgba(255,255,255,0.1); }
+.dark .uc-legend-heading       { color: #8d8d8d; }
+.dark .uc-legend-label         { color: #f4f4f4; }
+.dark .uc-legend-swatch        { border-color: rgba(255,255,255,0.15); }
+.dark .uc-filter-clear         { color: #78a9ff; }
+
+.dark .uc-row { background-color: #262626; }
+
+.dark .uc-row-header:hover { filter: brightness(1.15); }
+.dark .uc-row--expanded .uc-row-header { filter: none; }
+
+.dark .uc-row-name         { color: #f4f4f4; }
+.dark .uc-row-date         { color: #c6c6c6; }
+.dark .uc-social-count     { color: #c6c6c6; }
+.dark .uc-icon-btn         { color: #c6c6c6; }
+.dark .uc-icon-btn:hover   { color: #f4f4f4; background-color: rgba(255,255,255,0.1); }
+.dark .uc-chat-icon        { color: #c6c6c6; }
+.dark .uc-row-chevron-btn  { color: #c6c6c6; }
+
+/* ─── Dark mode — drawer ─────────────────────────────────────────────────── */
+.dark .uc-drawer       { border-top-color: #393939; background-color: #262626; }
+.dark .uc-tree-col     { background-color: #1c1c1c; border-right-color: #393939; }
+.dark .uc-content-col  { background-color: #262626; border-right-color: #393939; }
+.dark .uc-comments-col { background-color: #262626; }
+
+/* ─── Dark mode — tree nav ───────────────────────────────────────────────── */
+.dark .uc-tree-item              { color: #f4f4f4; }
+.dark .uc-tree-item:hover        { background-color: #393939; }
+.dark .uc-tree-item--active      { background-color: #393939; box-shadow: inset 2px 0 0 #78a9ff; }
+.dark .uc-tree-item--active:hover { background-color: #4c4c4c; }
+.dark .uc-tree-icon              { color: #8d8d8d; }
+.dark .uc-tree-item--active .uc-tree-icon { color: #78a9ff; }
+.dark .uc-tree-branch-chevron    { color: #8d8d8d; }
+
+/* ─── Dark mode — content area ───────────────────────────────────────────── */
+.dark .uc-content-heading  { color: #f4f4f4; }
+.dark .uc-content-body     { color: #c6c6c6; }
+.dark .uc-content-summary  { color: #8d8d8d; }
+.dark .uc-content-empty    { color: #6f6f6f; }
+
+/* ─── Dark mode — links ──────────────────────────────────────────────────── */
+.dark .uc-link-title       { color: #78a9ff; }
+.dark .uc-link-title:hover { color: #a6c8ff; }
+.dark .uc-link-desc        { color: #8d8d8d; }
+
+/* ─── Dark mode — comments panel ────────────────────────────────────────── */
+.dark .uc-comments-header  { border-bottom-color: #393939; }
+.dark .uc-comments-title   { color: #f4f4f4; }
+.dark .uc-comments-list    { background-color: #262626; }
+.dark .uc-comments-input   { border-top-color: #393939; }
+.dark .uc-comments-empty   { color: #6f6f6f; }
+.dark .uc-comment-author   { color: #8d8d8d; }
+.dark .uc-comment-text     { color: #f4f4f4; }
+
+/* ─── Golden Path interactive stepper ───────────────────────────────────── */
+.uc-golden-path {
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.uc-golden-path .uc-content-heading {
+  margin-bottom: 1.25rem;
+}
+
+/* Tab bar */
+.gp-tabs {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+  overflow-x: auto;
+}
+
+.gp-tab {
+  flex: 1;
+  min-width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.75rem 0.5rem 0.625rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.1s ease, border-color 0.1s ease;
+}
+
+.gp-tab:hover {
+  background-color: #e8e8e8;
+}
+
+.gp-tab--active {
+  border-bottom-color: #0f62fe;
+  background-color: #edf5ff;
+}
+
+.gp-tab--active:hover {
+  background-color: #d0e2ff;
+}
+
+/* Badge circle: number or checkmark */
+.gp-tab-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  color: #525252;
+  font-size: 0.625rem;
+  font-weight: 600;
+  font-family: 'IBM Plex Sans', sans-serif;
+  flex-shrink: 0;
+  transition: background-color 0.1s ease, color 0.1s ease;
+}
+
+.gp-tab--active .gp-tab-badge {
+  background-color: #0f62fe;
+  color: #ffffff;
+}
+
+.gp-tab--done .gp-tab-badge {
+  background-color: #24a148;
+  color: #ffffff;
+}
+
+/* Step label under badge */
+.gp-tab-label {
+  font-size: 0.6875rem;
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: #525252;
+  text-align: center;
+  line-height: 1.3;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.gp-tab--active .gp-tab-label {
+  color: #0f62fe;
+  font-weight: 600;
+}
+
+/* Active step detail panel */
+.gp-panel {
+  padding: 1.25rem 1.25rem 1.125rem;
+  background-color: #f4f4f4;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.gp-panel-meta {
+  font-size: 0.6875rem;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.32px;
+  text-transform: uppercase;
+  color: #0f62fe;
+  margin: 0 0 0.375rem;
+}
+
+.gp-panel-heading {
+  font-size: 1.125rem;
+  font-weight: 600;
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: #161616;
+  margin: 0 0 0.75rem;
+}
+
+.gp-panel-body {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: #393939;
+  margin: 0;
+}
+
+.gp-panel-summary {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: #525252;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Prev / Next */
+.gp-nav {
+  display: flex;
+  gap: 0.5rem;
+  padding-top: 1rem;
+}
+
+/* ─── Dark mode — golden path stepper ───────────────────────────────────── */
+.dark .gp-tabs                       { border-bottom-color: #393939; }
+.dark .gp-tab:hover                  { background-color: #393939; }
+.dark .gp-tab--active                { background-color: #001141; border-bottom-color: #78a9ff; }
+.dark .gp-tab--active:hover          { background-color: #001d6c; }
+.dark .gp-tab-badge                  { background-color: #4c4c4c; color: #c6c6c6; }
+.dark .gp-tab--active .gp-tab-badge  { background-color: #0f62fe; color: #ffffff; }
+.dark .gp-tab--done .gp-tab-badge    { background-color: #198038; color: #ffffff; }
+.dark .gp-tab-label                  { color: #8d8d8d; }
+.dark .gp-tab--active .gp-tab-label  { color: #78a9ff; }
+.dark .gp-panel                      { background-color: #1c1c1c; border-bottom-color: #393939; }
+.dark .gp-panel-meta                 { color: #78a9ff; }
+.dark .gp-panel-heading              { color: #f4f4f4; }
+.dark .gp-panel-body                 { color: #c6c6c6; }
+.dark .gp-panel-summary              { color: #8d8d8d; }
