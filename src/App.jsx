@@ -4,6 +4,7 @@ import GlobalHeader from './components/GlobalHeader';
 import ArchitectureGrid from './components/ArchitectureGrid';
 import UseCases from './components/UseCases';
 import SubmitUseCase from './components/SubmitUseCase';
+import About from './components/About';
 import { fetchUseCases } from './services/dbService';
 import './App.css';
 
@@ -23,7 +24,7 @@ export default function App() {
   }, []);
 
   const handleUseCaseSubmit = (entry) => {
-    setUseCases((prev) => [...prev, entry]);
+    setUseCases((prev) => [entry, ...prev]);
     setCurrentView('use-cases');
   };
 
@@ -60,6 +61,10 @@ export default function App() {
               onCancel={() => setCurrentView('use-cases')}
             />
           )}
+          {currentView === 'about' && (
+            <About onNavigate={setCurrentView} />
+          )}
+
         </main>
       </div>
     </Theme>

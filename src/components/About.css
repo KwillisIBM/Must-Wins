@@ -1,0 +1,214 @@
+/* ─── About page ─────────────────────────────────────────────────────────── */
+
+.about-page {
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ─── Banner ─────────────────────────────────────────────────────────────── */
+
+.about-banner {
+  background: #f4f4f4;
+  padding: 1rem 1.5rem 0.75rem;
+}
+
+.about-banner-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.about-banner-text {
+  flex: 1;
+}
+
+.about-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0f62fe;
+  margin: 0 0 0.25rem;
+}
+
+.about-heading {
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: #161616;
+  margin: 0 0 0.25rem;
+}
+
+.about-subheading {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #525252;
+  max-width: 600px;
+  margin: 0;
+}
+
+.about-banner-logo {
+  flex-shrink: 0;
+}
+
+.about-ee-logo {
+  height: 4.5rem;
+  width: auto;
+}
+
+/* ─── List ───────────────────────────────────────────────────────────────── */
+
+.about-list {
+  border-top: 1px solid #e0e0e0;
+}
+
+.about-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.about-list-icon {
+  flex-shrink: 0;
+  color: #0f62fe;
+  padding-top: 0.125rem;
+}
+
+.about-list-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.about-list-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #161616;
+}
+
+.about-list-body {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #525252;
+}
+
+/* ─── CTA row ────────────────────────────────────────────────────────────── */
+
+.about-cta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 2rem 1.5rem;
+  background: #0f62fe;
+}
+
+.about-cta-heading {
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: #ffffff;
+  margin: 0 0 0.25rem;
+}
+
+.about-cta-sub {
+  font-size: 0.8125rem;
+  color: #a6c8ff;
+  margin: 0;
+}
+
+.about-cta-actions {
+  display: flex;
+  gap: 1rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+/* ─── Built by ───────────────────────────────────────────────────────────── */
+
+.about-built-by {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: #161616;
+  border-top: 1px solid #393939;
+}
+
+.about-built-logo {
+  height: 2.5rem;
+  width: auto;
+  filter: brightness(0) invert(1);
+  opacity: 0.6;
+}
+
+.about-built-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.about-built-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #f4f4f4;
+}
+
+.about-built-sub {
+  font-size: 0.75rem;
+  color: #8d8d8d;
+}
+
+.about-built-link {
+  color: #78a9ff;
+  text-decoration: none;
+}
+
+.about-built-link:hover {
+  text-decoration: underline;
+}
+
+/* ─── Dark mode ──────────────────────────────────────────────────────────── */
+
+.dark .about-banner {
+  background: #161616;
+}
+
+.dark .about-heading {
+  color: #f4f4f4;
+}
+
+.dark .about-subheading {
+  color: #8d8d8d;
+}
+
+.dark .about-eyebrow {
+  color: #78a9ff;
+}
+
+.dark .about-list {
+  border-top-color: #393939;
+}
+
+.dark .about-list-item {
+  border-bottom-color: #393939;
+}
+
+.dark .about-list-title {
+  color: #f4f4f4;
+}
+
+.dark .about-list-body {
+  color: #c6c6c6;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .about-heading {
+    font-size: 1rem;
+  }
+  .about-ee-logo {
+    height: 3rem;
+  }
+}
