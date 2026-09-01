@@ -47,6 +47,9 @@ export default function GlobalHeader({ isDark, onToggleDark, currentView, onNavi
           <HeaderMenuItem href="https://navattic-demos-np.dinero.techzone.ibm.com/" target="_blank" rel="noopener noreferrer">Must Wins Demo Library</HeaderMenuItem>
         </HeaderNavigation>
         <HeaderGlobalBar>
+          <span className="app-version" title="Build version — bump it and this changes, so a stale process is obvious">
+            v{__APP_VERSION__}
+          </span>
           <HeaderGlobalAction
             aria-label="About"
             title="About this page"

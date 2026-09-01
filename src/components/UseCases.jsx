@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import CsvUploadModal from './CsvUploadModal';
 import {
   Tag,
   TextArea,
@@ -8,6 +10,7 @@ import {
   Popover,
   PopoverContent,
   TextInput,
+  Modal,
 } from '@carbon/react';
 import {
   Favorite, FavoriteFilled, Chat, ChevronDown, ChevronUp,
@@ -21,13 +24,15 @@ import {
   Checkmark,
   Information,
   Close,
+  TrashCan,
+  Upload,
 } from '@carbon/icons-react';
-import { fetchLikes, incrementLike, fetchComments, addComment } from '../services/dbService';
-import { getMustWinByName, CATEGORY_COLOR_CLASS, MUST_WIN_CATEGORIES } from '../data/mustWinsData';
+import { fetchLikes, incrementLike, fetchComments, addComment, removeComment, deleteUseCase } from '../services/dbService';
+import { getMustWinByName, MUST_WIN_CATEGORIES } from '../data/mustWinsData';
 import './UseCases.css';
 
 // ─── Social hook — isolates all likes/comments state per use case ─────────────
-function useSocial(useCaseId) {
+function useSocial(useCaseId, userEmail) {
   const [likes, setLikes] = useState(0);
   const [liked, setLiked] = useState(false);
   const [comments, setComments] = useState([]);
@@ -35,9 +40,12 @@ function useSocial(useCaseId) {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchLikes(useCaseId).then(setLikes);
+    fetchLikes(useCaseId).then(({ count, emails }) => {
+      setLikes(count);
+      if (userEmail) setLiked(emails.includes(userEmail));
+    });
     fetchComments(useCaseId).then(setComments);
-  }, [useCaseId]);
+  }, [useCaseId, userEmail]);
 
   const handleLike = useCallback(async () => {
     if (liked) return;
@@ -46,24 +54,33 @@ function useSocial(useCaseId) {
     setLiked(true);
   }, [useCaseId, liked]);
 
+  const handleRemoveComment = useCallback(async (commentId) => {
+    await removeComment(useCaseId, commentId);
+    setComments((prev) => prev.filter((c) => c.id !== commentId));
+  }, [useCaseId]);
+
+  const appendComment = useCallback((comment) => {
+    setComments((prev) => [...prev, comment]);
+  }, []);
+
+  return { likes, liked, comments, draft, setDraft, submitting, handleLike, handleRemoveComment, appendComment };
+}
+
+// ─── Comments panel (right column — always visible while expanded) ────────────
+function CommentsPanel({ useCaseId, userEmail, isAdmin, likes, liked, handleLike, comments, handleRemoveComment, onCommentPosted }) {
+  const [draft, setDraft] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const listRef = useRef(null);
+
   const handleAddComment = useCallback(async () => {
     const text = draft.trim();
     if (!text) return;
     setSubmitting(true);
     const comment = await addComment(useCaseId, text);
-    setComments((prev) => [...prev, comment]);
+    onCommentPosted(comment);
     setDraft('');
     setSubmitting(false);
-  }, [useCaseId, draft]);
-
-  return { likes, liked, comments, draft, setDraft, submitting, handleLike, handleAddComment };
-}
-
-// ─── Comments panel (right column — always visible while expanded) ────────────
-function CommentsPanel({ useCaseId }) {
-  const { likes, liked, comments, draft, setDraft, submitting, handleLike, handleAddComment } =
-    useSocial(useCaseId);
-  const listRef = useRef(null);
+  }, [useCaseId, draft, onCommentPosted]);
 
   // Scroll to bottom whenever a new comment appears
   useEffect(() => {
@@ -98,7 +115,20 @@ function CommentsPanel({ useCaseId }) {
         ) : (
           comments.map((c) => (
             <div key={c.id} className="uc-comment">
-              <span className="uc-comment-author">{c.author}</span>
+              <div className="uc-comment-header">
+                <span className="uc-comment-author">{isAdmin ? c.author : 'Anonymous'}</span>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    className="uc-comment-delete"
+                    onClick={() => handleRemoveComment(c.id)}
+                    aria-label="Delete comment"
+                    title="Delete comment"
+                  >
+                    <TrashCan size={14} />
+                  </button>
+                )}
+              </div>
               <p className="uc-comment-text">{c.text}</p>
             </div>
           ))
@@ -224,11 +254,7 @@ function ContentArea({ useCase, activeNode, onSelect }) {
       heading = useCase.cardHeader;
     } else {
       const first = useCase.narrative.split(/\.(?:\s|$)/)[0].trim();
-      const mentionsCompany = !useCase.company ||
-        first.toLowerCase().includes(useCase.company.toLowerCase());
-      const raw = mentionsCompany
-        ? `${first}.`
-        : `${useCase.company} — ${first.charAt(0).toLowerCase() + first.slice(1)}.`;
+      const raw = `${first}.`;
       heading = raw.length > 130 ? raw.slice(0, 130).replace(/\W+\S*$/, '') + '.' : raw;
     }
     return (
@@ -337,7 +363,7 @@ function TreeNav({ useCase, activeNode, onSelect }) {
 }
 
 // ─── Expanded drawer for a single use case ───────────────────────────────────
-function UseCaseDrawer({ useCase }) {
+function UseCaseDrawer({ useCase, userEmail, isAdmin, likes, liked, handleLike, comments, handleRemoveComment, onCommentPosted }) {
   const [activeNode, setActiveNode] = useState('narrative');
 
   return (
@@ -354,7 +380,17 @@ function UseCaseDrawer({ useCase }) {
 
       {/* Right: persistent comments */}
       <div className="uc-comments-col">
-        <CommentsPanel useCaseId={useCase.id} />
+        <CommentsPanel
+          useCaseId={useCase.id}
+          userEmail={userEmail}
+          isAdmin={isAdmin}
+          likes={likes}
+          liked={liked}
+          handleLike={handleLike}
+          comments={comments}
+          handleRemoveComment={handleRemoveComment}
+          onCommentPosted={onCommentPosted}
+        />
       </div>
     </div>
   );
@@ -363,111 +399,262 @@ function UseCaseDrawer({ useCase }) {
 // ─── Single collapsed/expanded use case row ───────────────────────────────────
 // NOTE: The outer element is a <div>, not a <button>, because the social icons
 // are interactive elements and HTML forbids nesting buttons inside buttons.
-function UseCaseRow({ useCase, defaultExpanded = false }) {
+function UseCaseRow({ useCase, defaultExpanded = false, isAdmin = false, userEmail = '', onDelete }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
-  const { likes, liked, comments, handleLike } = useSocial(useCase.id);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const { likes, liked, comments, handleLike, handleRemoveComment, appendComment } = useSocial(useCase.id, userEmail);
+  const navigate = useNavigate();
   const toggle = () => setExpanded((prev) => !prev);
 
-  const category = getMustWinByName(useCase.mustWinName)?.category;
-  const colorClass = CATEGORY_COLOR_CLASS[category] ?? 'uc-header--default';
+  const handleDeleteClick = async () => {
+    setDeleting(true);
+    try {
+      await deleteUseCase(useCase.id, userEmail);
+      setShowDeleteModal(false);
+      onDelete?.(useCase.id);
+    } catch (error) {
+      console.error('Failed to delete use case:', error);
+      alert(`Failed to delete use case: ${error.message}`);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const isInteractive = useCase.isInteractive && useCase.viewKey;
 
   return (
     <div className={`uc-row${expanded ? ' uc-row--expanded' : ''}`}>
       {/* Collapsed header — always visible */}
-      <div className={`uc-row-header ${colorClass}`}>
+      <div className="uc-row-header">
         {/* Clickable expand area: name + tags */}
         <button
           type="button"
           className="uc-row-expand-area"
-          onClick={toggle}
-          aria-expanded={expanded}
-          aria-label={`${expanded ? 'Collapse' : 'Expand'} ${useCase.name}`}
+          onClick={isInteractive ? () => navigate(`/use-cases/${useCase.viewKey}`) : toggle}
+          aria-expanded={isInteractive ? undefined : expanded}
+          aria-label={isInteractive ? `View interactive architecture for ${useCase.name}` : `${expanded ? 'Collapse' : 'Expand'} ${useCase.name}`}
         >
-          <span className="uc-row-name">{useCase.name}</span>
+          <span className="uc-row-name">
+            {useCase.name}
+            {isInteractive && (
+              <span className="uc-row-interactive-badge" title="Interactive architecture view">
+                ✦ Interactive
+              </span>
+            )}
+          </span>
+        </button>
+
+        {/* Products + date + social — all inline on the right */}
+        <div className="uc-row-right">
           <div className="uc-row-tags">
-            <Tag type="cool-gray" size="sm">{useCase.company}</Tag>
             {useCase.products.filter(Boolean).map((p) => (
-              <Tag key={p} type="blue" size="sm">{p}</Tag>
+              <span key={p} className="uc-row-product">{p}</span>
             ))}
             {useCase.date && (
               <span className="uc-row-date">{useCase.date}</span>
             )}
           </div>
-        </button>
-
-        {/* Social icons — separate from expand button to avoid nesting */}
-        <div className="uc-row-social">
-          <span className="uc-social-count">{likes}</span>
-          <button
-            type="button"
-            className={`uc-icon-btn${liked ? ' uc-icon-btn--active' : ''}`}
-            onClick={handleLike}
-            aria-label="Like"
-          >
-            {liked ? <FavoriteFilled size={16} /> : <Favorite size={16} />}
-          </button>
-          <span className="uc-social-count">{comments.length}</span>
-          <Chat size={16} className="uc-chat-icon" />
+          <div className="uc-row-social">
+            <span className="uc-social-count">{likes}</span>
+            <button
+              type="button"
+              className={`uc-icon-btn${liked ? ' uc-icon-btn--active' : ''}`}
+              onClick={handleLike}
+              aria-label="Like"
+            >
+              {liked ? <FavoriteFilled size={16} /> : <Favorite size={16} />}
+            </button>
+            <span className="uc-social-count">{comments.length}</span>
+            <Chat size={16} className="uc-chat-icon" />
+            {isAdmin && (
+              <button
+                type="button"
+                className="uc-icon-btn uc-icon-btn--danger"
+                onClick={() => setShowDeleteModal(true)}
+                aria-label="Delete use case"
+                title="Delete use case (admin only)"
+              >
+                <TrashCan size={16} />
+              </button>
+            )}
+            <button
+              type="button"
+              className="uc-icon-btn uc-row-chevron-btn"
+              onClick={toggle}
+              aria-label={expanded ? 'Collapse' : 'Expand'}
+            >
+              {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
+          </div>
         </div>
-
-        {/* Chevron toggle button */}
-        <button
-          type="button"
-          className="uc-row-chevron-btn"
-          onClick={toggle}
-          aria-label={expanded ? 'Collapse' : 'Expand'}
-          tabIndex={-1}
-          aria-hidden="true"
-        >
-          {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
       </div>
 
       {/* Expanded drawer */}
-      {expanded && <UseCaseDrawer useCase={useCase} />}
+      {expanded && <UseCaseDrawer useCase={useCase} userEmail={userEmail} isAdmin={isAdmin} likes={likes} liked={liked} handleLike={handleLike} comments={comments} handleRemoveComment={handleRemoveComment} onCommentPosted={appendComment} />}
+      
+      {/* Delete confirmation modal */}
+      <Modal
+        open={showDeleteModal}
+        danger
+        modalHeading="Delete use case"
+        primaryButtonText="Delete"
+        secondaryButtonText="Cancel"
+        onRequestClose={() => setShowDeleteModal(false)}
+        onRequestSubmit={handleDeleteClick}
+        primaryButtonDisabled={deleting}
+      >
+        <p>Are you sure you want to delete "{useCase.name}"?</p>
+        <p style={{ marginTop: '1rem', color: '#da1e28' }}>
+          This action cannot be undone. All associated likes and comments will also be deleted.
+        </p>
+      </Modal>
+    </div>
+  );
+}
+
+// ─── Category-level collapsible section ──────────────────────────────────────
+const CATEGORY_ACCENT = {
+  'Automation':              { light: '#e8daff', dark: '#491d8b', text: '#21006e' },
+  'Data':                    { light: '#bae6ff', dark: '#012749', text: '#003a6d' },
+  'Hybrid Cloud':            { light: '#d0e2ff', dark: '#002d9c', text: '#001d6c' },
+  'Transaction Processing':  { light: '#dde1e6', dark: '#4c4c4c', text: '#393939' },
+  'Mainframe Modernization': { light: '#d9fbfb', dark: '#022b30', text: '#00474a' },
+};
+
+function CategorySection({ category, useCases, isOpen, onToggle, isAdmin, userEmail, onDelete }) {
+  const accent = CATEGORY_ACCENT[category] ?? { light: '#f4f4f4', dark: '#393939', text: '#161616' };
+  return (
+    <div className="uc-category-section" data-cat={category}>
+      <button
+        type="button"
+        className="uc-category-header"
+        onClick={onToggle}
+        aria-expanded={isOpen}
+      >
+        <span className="uc-category-title">{category}</span>
+        <span className="uc-category-count">{useCases.length} {useCases.length === 1 ? 'use case' : 'use cases'}</span>
+        <span className="uc-category-chevron">
+          {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </span>
+      </button>
+      {isOpen && (
+        <div className="uc-category-body">
+          {useCases.map((uc) => (
+            <UseCaseRow
+              key={uc.id}
+              useCase={uc}
+              defaultExpanded={false}
+              isAdmin={isAdmin}
+              userEmail={userEmail}
+              onDelete={onDelete}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 // ─── Color legend entries ─────────────────────────────────────────────────────
 const LEGEND = [
-  { category: 'Automation',             bg: '#e8daff', dark: '#31135e' },
-  { category: 'Data',                   bg: '#bae6ff', dark: '#003a6d' },
-  { category: 'Hybrid Cloud',           bg: '#d0e2ff', dark: '#001d6c' },
-  { category: 'Transaction Processing', bg: '#dde1e6', dark: '#393939' },
+  { category: 'Automation',              bg: '#e8daff', dark: '#31135e' },
+  { category: 'Data',                    bg: '#bae6ff', dark: '#003a6d' },
+  { category: 'Hybrid Cloud',            bg: '#d0e2ff', dark: '#001d6c' },
+  { category: 'Transaction Processing',  bg: '#dde1e6', dark: '#393939' },
+  { category: 'Mainframe Modernization', bg: '#d9fbfb', dark: '#022b30' },
 ];
 
 // ─── Page root ────────────────────────────────────────────────────────────────
-export default function UseCases({ useCases, loading, onNavigate, filters = {}, onFiltersChange }) {
+export default function UseCases({
+  isAdmin,
+  userEmail,
+  isDark = false,
+  useCases,
+  loading,
+  onNavigate,
+  filters = {},
+  onFiltersChange,
+  onUseCasesChange,
+  refreshUseCases,
+  categoriesOpen = {},
+  onCategoryToggle,
+  previewAsUser = false,
+  onPreviewAsUserChange,
+}) {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [legendOpen, setLegendOpen] = useState(false);
+  const [csvModalOpen, setCsvModalOpen] = useState(false);
 
-  const companies = [...new Set(useCases.map((uc) => uc.company).filter(Boolean))].sort();
+  const { state: locationState } = useLocation();
+
+  // Re-fetch only when arriving from a submit.
+  // All filter changes use replace: true, so /use-cases itself stays in the stack.
+  useEffect(() => {
+    if (locationState?.submitted) {
+      refreshUseCases?.();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const showAdminUi = isAdmin && !previewAsUser;
+
+  // Filter state lives in the URL
+  const mustWin = searchParams.get('mustWin') ?? '';
+  const product = searchParams.get('product') ?? '';
+
+  const setFilter = (key, val) => {
+    const next = Object.fromEntries(searchParams.entries());
+    if (val) {
+      next[key] = val;
+    } else {
+      delete next[key];
+    }
+    setSearchParams(next, { replace: true });
+  };
+
+  const clearFilters = () => setSearchParams({}, { replace: true });
+
+  const hasFilter = !!(mustWin || product);
 
   const filtered = useCases.filter((uc) => {
-    if (filters.company && uc.company !== filters.company) return false;
-    if (filters.mustWin) {
+    if (mustWin) {
       const cat = getMustWinByName(uc.mustWinName)?.category;
-      if (cat !== filters.mustWin) return false;
+      if (cat !== mustWin) return false;
     }
-    if (filters.product) {
-      const q = filters.product.toLowerCase();
+    if (product) {
+      const q = product.toLowerCase();
       if (!uc.products.some((p) => p.toLowerCase().includes(q))) return false;
     }
     return true;
   });
 
-  const hasFilter = !!(filters.company || filters.mustWin || filters.product);
-  const clearFilters = () => onFiltersChange?.({ company: '', mustWin: '', product: '' });
-  const setFilter = (key, val) => onFiltersChange?.({ ...filters, [key]: val });
+  const handleDelete = (useCaseId) => {
+    // Remove the deleted use case from the list
+    if (onUseCasesChange) {
+      const updated = useCases.filter(uc => uc.id !== useCaseId);
+      onUseCasesChange(updated);
+    }
+  };
 
   return (
+    <>
     <div className="uc-page">
+      {previewAsUser && isAdmin && (
+        <button
+          type="button"
+          className="uc-preview-banner"
+          onClick={() => onPreviewAsUserChange?.(false)}
+        >
+          Previewing as User — Click to Exit
+        </button>
+      )}
 
       {/* ── Page header ───────────────────────────────────────── */}
       <div className="uc-page-header">
         <div className="uc-page-header-text">
           <div className="uc-page-title-row">
-            <h1 className="uc-page-title">Must Wins in Action: Executing the Golden Path</h1>
+            <h1 className="uc-page-title">Product Use Cases and Golden Paths</h1>
             <Popover
               open={legendOpen}
               align="bottom-left"
@@ -484,11 +671,11 @@ export default function UseCases({ useCases, loading, onNavigate, filters = {}, 
                 <Information size={16} />
               </button>
               <PopoverContent className="uc-legend-popover">
-                <p className="uc-legend-heading">Card color = Must Win category</p>
+                <p className="uc-legend-heading">Card color = Platform</p>
                 <div className="uc-legend-list">
-                  {LEGEND.map(({ category, bg }) => (
+                  {LEGEND.map(({ category, bg, dark }) => (
                     <div key={category} className="uc-legend-item">
-                      <span className="uc-legend-swatch" style={{ backgroundColor: bg }} />
+                      <span className="uc-legend-swatch" style={{ backgroundColor: isDark ? dark : bg }} />
                       <span className="uc-legend-label">{category}</span>
                     </div>
                   ))}
@@ -497,35 +684,38 @@ export default function UseCases({ useCases, loading, onNavigate, filters = {}, 
             </Popover>
           </div>
           <p className="uc-page-subtitle">
-            Select a use case to explore the must win, narrative, golden path, and pitch.
-          </p>
+            Select a use case to explore the relevant must-win, its business narrative, the golden path to success, and the platform/product pitch for the client.</p>
         </div>
-        <Button kind="primary" size="sm" onClick={() => onNavigate('submit-use-case')}>
-          Submit a Use Case
-        </Button>
+        <div className="uc-page-actions">
+          {showAdminUi && (
+            <>
+              <Tag type="red" size="sm" style={{ alignSelf: 'center' }}>
+                Admin View
+              </Tag>
+              <Button kind="tertiary" size="sm" onClick={() => onPreviewAsUserChange?.(true)}>
+                Preview as User
+              </Button>
+              <Button kind="secondary" size="sm" renderIcon={Upload} onClick={() => setCsvModalOpen(true)}>
+                Upload CSV
+              </Button>
+            </>
+          )}
+          <Button kind="primary" size="sm" onClick={() => navigate('/submit')}>
+            Submit a Use Case
+          </Button>
+        </div>
       </div>
 
       {/* ── Filters ───────────────────────────────────────────── */}
       <div className="uc-filters">
         <Select
-          id="uc-filter-company"
-          labelText="Company"
-          size="sm"
-          value={filters.company ?? ''}
-          onChange={(e) => setFilter('company', e.target.value)}
-        >
-          <SelectItem value="" text="All companies" />
-          {companies.map((c) => <SelectItem key={c} value={c} text={c} />)}
-        </Select>
-
-        <Select
           id="uc-filter-mustwin"
-          labelText="Must Wins"
+          labelText="Platform"
           size="sm"
-          value={filters.mustWin ?? ''}
+          value={mustWin}
           onChange={(e) => setFilter('mustWin', e.target.value)}
         >
-          <SelectItem value="" text="All Must Wins" />
+          <SelectItem value="" text="All Platforms" />
           {MUST_WIN_CATEGORIES.map((cat) => (
             <SelectItem key={cat} value={cat} text={cat} />
           ))}
@@ -536,7 +726,7 @@ export default function UseCases({ useCases, loading, onNavigate, filters = {}, 
           labelText="Product"
           size="sm"
           placeholder="Search products…"
-          value={filters.product ?? ''}
+          value={product}
           onChange={(e) => setFilter('product', e.target.value)}
         />
 
@@ -554,11 +744,37 @@ export default function UseCases({ useCases, loading, onNavigate, filters = {}, 
         ) : filtered.length === 0 ? (
           <p className="uc-loading">No use cases match the current filters.</p>
         ) : (
-          filtered.map((uc, i) => (
-            <UseCaseRow key={uc.id} useCase={uc} defaultExpanded={i === 0} />
-          ))
+          MUST_WIN_CATEGORIES.map((cat) => {
+            const catUseCases = filtered.filter(
+              (uc) => getMustWinByName(uc.mustWinName)?.category === cat
+            );
+            if (catUseCases.length === 0) return null;
+            return (
+              <CategorySection
+                key={cat}
+                category={cat}
+                useCases={catUseCases}
+                isOpen={categoriesOpen[cat] !== false}
+                onToggle={() => onCategoryToggle?.(cat)}
+                isAdmin={showAdminUi}
+                userEmail={userEmail}
+                onDelete={handleDelete}
+              />
+            );
+          })
         )}
       </div>
     </div>
+    <CsvUploadModal
+      open={csvModalOpen}
+      onClose={() => setCsvModalOpen(false)}
+      existingNames={useCases.map((uc) => uc.name)}
+      onUploaded={() => {
+        import('../services/dbService').then(({ fetchUseCases }) => {
+          fetchUseCases().then((all) => onUseCasesChange?.(all));
+        });
+      }}
+    />
+    </>
   );
 }

@@ -1,37 +1,52 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Theme } from '@carbon/react';
 import GlobalHeader from './components/GlobalHeader';
 import ArchitectureGrid from './components/ArchitectureGrid';
 import UseCases from './components/UseCases';
 import SubmitUseCase from './components/SubmitUseCase';
 import About from './components/About';
-import { fetchUseCases } from './services/dbService';
+import FidelityArchitecturePage from './components/views/FidelityArchitecturePage';
+import { fetchUseCases, fetchCurrentUser } from './services/dbService';
+import { MUST_WIN_CATEGORIES } from './data/mustWinsData';
 import './App.css';
 
-const EMPTY_FILTERS = { company: '', mustWin: '', product: '' };
+// All categories open by default
+const DEFAULT_CATEGORIES_OPEN = Object.fromEntries(MUST_WIN_CATEGORIES.map((c) => [c, true]));
 
-export default function App() {
+function AppInner() {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
   const [isDark, setIsDark] = useState(false);
-  const [currentView, setCurrentView] = useState('architecture');
   const [useCases, setUseCases] = useState([]);
   const [loadingUseCases, setLoadingUseCases] = useState(true);
-  const [useCasesFilters, setUseCasesFilters] = useState(EMPTY_FILTERS);
+  const [categoriesOpen, setCategoriesOpen] = useState(DEFAULT_CATEGORIES_OPEN);
+  const [previewAsUser, setPreviewAsUser] = useState(false);
 
-  useEffect(() => {
-    fetchUseCases()
-      .then(setUseCases)
-      .finally(() => setLoadingUseCases(false));
+  const refreshUseCases = useCallback(() => {
+    fetchUseCases().then((data) => {
+      setUseCases(data);
+      setLoadingUseCases(false);
+    });
   }, []);
 
-  const handleUseCaseSubmit = (entry) => {
-    setUseCases((prev) => [entry, ...prev]);
-    setCurrentView('use-cases');
-  };
+  // Initial data load
+  useEffect(() => {
+    fetchUseCases().then((data) => {
+      setUseCases(data);
+      setLoadingUseCases(false);
+    });
+  }, []);
 
-  const navigateToUseCases = (filters = {}) => {
-    setUseCasesFilters({ ...EMPTY_FILTERS, ...filters });
-    setCurrentView('use-cases');
-  };
+  // Check admin status on mount — identity comes from oauth2-proxy via /api/me
+  useEffect(() => {
+    fetchCurrentUser().then(user => {
+      if (user?.email) {
+        setUserEmail(user.email);
+        setIsAdmin(user.isAdmin === true);
+      }
+    });
+  }, []);
 
   return (
     <Theme theme={isDark ? 'g100' : 'white'}>
@@ -39,34 +54,45 @@ export default function App() {
         <GlobalHeader
           isDark={isDark}
           onToggleDark={() => setIsDark((d) => !d)}
-          currentView={currentView}
-          onNavigate={setCurrentView}
         />
         <main className="app-main">
-          {currentView === 'architecture' && (
-            <ArchitectureGrid onNavigateToUseCases={navigateToUseCases} />
-          )}
-          {currentView === 'use-cases' && (
-            <UseCases
-              useCases={useCases}
-              loading={loadingUseCases}
-              onNavigate={setCurrentView}
-              filters={useCasesFilters}
-              onFiltersChange={setUseCasesFilters}
+          <Routes>
+            <Route path="/" element={<ArchitectureGrid isDark={isDark} />} />
+            <Route
+              path="/use-cases"
+              element={
+                <UseCases
+                  isAdmin={isAdmin}
+                  userEmail={userEmail}
+                  isDark={isDark}
+                  useCases={useCases}
+                  loading={loadingUseCases}
+                  onUseCasesChange={setUseCases}
+                  refreshUseCases={refreshUseCases}
+                  categoriesOpen={categoriesOpen}
+                  onCategoryToggle={(cat) =>
+                    setCategoriesOpen((prev) => ({ ...prev, [cat]: !prev[cat] }))
+                  }
+                  previewAsUser={previewAsUser}
+                  onPreviewAsUserChange={setPreviewAsUser}
+                />
+              }
             />
-          )}
-          {currentView === 'submit-use-case' && (
-            <SubmitUseCase
-              onSubmit={handleUseCaseSubmit}
-              onCancel={() => setCurrentView('use-cases')}
-            />
-          )}
-          {currentView === 'about' && (
-            <About onNavigate={setCurrentView} />
-          )}
-
+            <Route path="/submit" element={<SubmitUseCase />} />
+            <Route path="/about" element={<About isDark={isDark} />} />
+            <Route path="/use-cases/fidelity-architecture" element={<FidelityArchitecturePage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </main>
       </div>
     </Theme>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppInner />
+    </BrowserRouter>
   );
 }

@@ -1,10 +1,13 @@
 {
   "name": "fsm-must-wins-landing-page",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.4.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "node server/server.js",
+    "dev:all": "concurrently \"npm run dev\" \"npm run dev:server\"",
+    "seed": "node server/seed.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -13,9 +16,13 @@
     "@carbon/icons-react": "^11.80.0",
     "@carbon/react": "^1.107.1",
     "@carbon/styles": "^1.106.0",
-    "@supabase/supabase-js": "^2.108.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^4.22.2",
+    "framer-motion": "^13.1.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
+    "react-router-dom": "^7.18.3",
     "sass": "^1.99.0"
   },
   "devDependencies": {
@@ -23,6 +30,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
+    "concurrently": "^9.2.4",
     "esbuild": "^0.28.0",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",

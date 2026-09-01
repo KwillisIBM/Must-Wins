@@ -1,0 +1,539 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   FidelityArchitecturePage.css
+   Colors taken directly from Figma frames 378:953 (Today) + 380:1039 (Target)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Page shell ─────────────────────────────────────────────────────────── */
+.fap-root {
+  padding: 1.25rem 1.5rem 3.5rem;
+  max-width: 1600px;
+  margin: 0 auto;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.fap-back-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.fap-header { margin-bottom: 1.25rem; }
+
+.fap-tags {
+  display: flex;
+  gap: 0.375rem;
+  margin-bottom: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.fap-title {
+  font-size: 1.375rem;
+  font-weight: 400;
+  color: #161616;
+  margin: 0 0 0.5rem;
+  line-height: 1.3;
+}
+
+.fap-subtitle {
+  font-size: 0.875rem;
+  color: #525252;
+  margin: 0;
+  max-width: 80ch;
+  line-height: 1.6;
+}
+
+.fap-brief {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin: 1.5rem 0;
+  padding: 1.25rem 0;
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+@media (max-width: 800px) {
+  .fap-brief { grid-template-columns: 1fr; gap: 1.25rem; }
+}
+
+.fap-brief-head {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 0.5rem;
+}
+
+.fap-brief-head--problem  { color: #a2191f; }
+.fap-brief-head--solution { color: #0e6027; }
+
+.fap-brief-text {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #393939;
+  margin: 0 0 0.625rem;
+  max-width: 62ch;
+}
+
+.fap-brief-text:last-child { margin-bottom: 0; }
+
+.fap-toggle-row { margin-bottom: 1.5rem; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Architecture diagram (fad-*) — Figma-coordinate canvas, scaled to fit.
+   Geometry lives in fidelityLayout.js; this file only styles the primitives.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.fad-wrap {
+  position: relative;
+  width: 100%;
+  margin-top: 0.25rem;
+  /* No overflow clipping here: the stage is scaled DOWN, so its transformed box
+     never overflows, while `hidden` would crop any toggletip that opens past the
+     diagram's bottom edge. */
+}
+
+/* Below MIN_SCALE the diagram stops shrinking and pans instead, so it never
+   degrades into unreadable 5px type on a phone. Scrolling clips toggletips on
+   this breakpoint — an accepted trade for legibility on small screens. */
+.fad-wrap--pan {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.fad-sizer {
+  position: relative;
+}
+
+/* In pan mode the phantom overflow from the stage's untransformed box would
+   otherwise let you scroll into blank space. Nothing visible is clipped: the
+   stage's rendered content already fits inside the sizer. */
+.fad-wrap--pan .fad-sizer {
+  overflow: hidden;
+}
+
+.fad-stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* ── Region panels (System of Record, Serving/Analytics Lane, Cloud) ─────── */
+.fad-panel {
+  border-radius: 2px;
+}
+
+.fad-panel-label {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%) rotate(180deg);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 15px;
+  line-height: 1.2;
+  color: #161616;
+  white-space: nowrap;
+}
+
+/* ── Cards ───────────────────────────────────────────────────────────────── */
+.fad-card {
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.fad-rule {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+}
+
+.fad-card-text {
+  position: absolute;
+  left: 20px;
+  right: 14px;
+  top: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fad-card-header {
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.25;
+  color: #161616;
+}
+
+.fad-card-body {
+  font-size: 14px;
+  line-height: 1.35;
+  color: #525252;
+  white-space: pre-line;
+}
+
+
+.fad-card-vertical {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(180deg);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 15px;
+  color: #161616;
+  white-space: nowrap;
+}
+
+/* ── Tiles ───────────────────────────────────────────────────────────────── */
+.fad-tile { border-radius: 0; }
+
+.fad-tile-label {
+  position: absolute;
+  left: 20px;
+  right: 26px;
+  top: 9px;
+  font-size: 16px;
+  line-height: 1.3;
+  color: #161616;
+  text-align: left;
+}
+
+/* ── Shared clickable surface (Carbon Toggletip trigger) ─────────────────── */
+.fad-hit {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  text-align: left !important;
+  cursor: pointer;
+  transition: filter 0.12s;
+}
+
+.fad-hit:hover { filter: brightness(0.95); }
+.fad-hit:focus:not(:focus-visible) { outline: none !important; box-shadow: none !important; }
+.fad-hit:focus-visible { outline: 2px solid #0f62fe !important; outline-offset: -2px !important; }
+
+.fad-card--clickable .cds--toggletip,
+.fad-card--clickable .cds--popover-container,
+.fad-tile .cds--toggletip,
+.fad-tile .cds--popover-container {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+/* Matches the homepage SubBox: 24px asset, solid black, bottom-right, 8px in. */
+.fad-icon {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  filter: brightness(0);
+  pointer-events: none;
+}
+
+/* ── Connectors ──────────────────────────────────────────────────────────── */
+.fad-wires {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+  transition: opacity 0.18s ease;
+}
+
+.fad-wires--faded { opacity: 0.18; }
+
+.fad-wire-label {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* ── ZCC annotation (clickable, so it is HTML rather than SVG text) ───────── */
+.fad-zcc { line-height: 1; }
+
+.fad-zcc-hit {
+  display: block !important;
+  padding: 2px 4px !important;
+  min-height: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.fad-zcc-hit:hover { background: rgba(15, 98, 254, 0.1) !important; }
+.fad-zcc-hit:focus:not(:focus-visible) { outline: none !important; box-shadow: none !important; }
+.fad-zcc-hit:focus-visible { outline: 2px solid #0f62fe !important; outline-offset: 0 !important; }
+
+.fad-zcc-text {
+  font-size: 13px;
+  font-style: italic;
+  color: #525252;
+}
+
+/* ── Legend highlight dimming ────────────────────────────────────────────── */
+.fad-dim {
+  opacity: 0.22;
+  filter: saturate(0.4);
+  transition: opacity 0.18s ease, filter 0.18s ease;
+}
+
+/* ── Italic captions under the lanes ─────────────────────────────────────── */
+.fad-note {
+  font-size: 14px;
+  font-style: italic;
+  color: #161616;
+  white-space: nowrap;
+  pointer-events: none;   /* a caption must never swallow a click meant for a box */
+  transition: opacity 0.18s ease;
+}
+
+.fad-note--faded { opacity: 0.3; }
+
+/* Visually hidden, but read out — the connectors are the whole meaning of the
+   diagram and they live in an aria-hidden SVG. */
+.fap-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Legend row (below the diagram)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.fap-legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.fap-legend {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.fap-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.75rem;
+  color: #525252;
+  background: transparent;
+  border: 1px solid #c6c6c6;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+}
+
+.fap-chip:hover { background-color: #f0f0f0; }
+.fap-chip--active { background-color: #ffffff; font-weight: 600; }
+.fap-chip:focus-visible { outline: 2px solid #0f62fe; outline-offset: 1px; }
+
+.fap-chip-count {
+  font-size: 0.6875rem;
+  color: #6f6f6f;
+  font-weight: 400;
+}
+
+.fap-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 0.375rem;
+  vertical-align: middle;
+}
+
+.fap-legend-hint {
+  font-size: 0.75rem;
+  color: #525252;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Toggletip z-index fix — must render above everything
+   ═══════════════════════════════════════════════════════════════════════════ */
+.fap-root .cds--toggletip-content,
+.fap-root .cds--popover-content {
+  z-index: 9000 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Toggletip content typography
+   ═══════════════════════════════════════════════════════════════════════════ */
+.fap-tip-inner {
+  max-width: 288px;
+}
+
+.fap-tip-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #f4f4f4;
+  margin: 0 0 0.125rem;
+  line-height: 1.3;
+}
+
+.fap-tip-tech {
+  font-size: 0.75rem;
+  color: #a8a8a8;
+  margin: 0 0 0.75rem;
+  line-height: 1.4;
+}
+
+.fap-tip-cap {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #c6c6c6;
+  margin: 0.75rem 0 0.25rem;
+}
+
+.fap-tip-inner > .fap-tip-cap:nth-of-type(3) { margin-top: 0; }
+
+.fap-tip-cap--pain    { color: #ffb3b8; }
+.fap-tip-cap--benefit { color: #a7f0ba; }
+
+.fap-tip-text {
+  font-size: 0.8125rem;
+  color: #f4f4f4;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Comparison bullets (slide 3)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.fap-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  gap: 1.5rem;
+  margin-top: 1.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.fap-comparison-divider {
+  background-color: #e0e0e0;
+  width: 1px;
+  align-self: stretch;
+}
+
+.fap-comparison-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.fap-comparison-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.fap-comparison-col { transition: opacity 0.2s ease; }
+.fap-comparison-col:not(.fap-comparison-col--active) { opacity: 0.55; }
+
+.fap-comparison-badge {
+  font-size: 0.625rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6f6f6f;
+  border: 1px solid #c6c6c6;
+  border-radius: 999px;
+  padding: 0.0625rem 0.4375rem;
+  margin-left: 0.375rem;
+}
+
+.fap-comparison-dot--today  { background-color: #da1e28; }
+.fap-comparison-dot--target { background-color: #24a148; }
+
+.fap-comparison-col--today  .fap-comparison-header { color: #750e13; }
+.fap-comparison-col--target .fap-comparison-header { color: #044317; }
+
+.fap-comparison-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fap-comparison-item {
+  font-size: 0.8125rem;
+  color: #161616;
+  line-height: 1.55;
+  padding-left: 0.875rem;
+  position: relative;
+}
+
+.fap-comparison-item::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  font-size: 0.75rem;
+}
+
+.fap-comparison-col--today  .fap-comparison-item::before { color: #da1e28; }
+.fap-comparison-col--target .fap-comparison-item::before { color: #24a148; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Dark mode — page chrome only. The diagram keeps the Figma light palette so it
+   stays readable and on-design in either theme.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.dark .fap-title       { color: #f4f4f4; }
+.dark .fap-subtitle    { color: #8d8d8d; }
+.dark .fap-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 0.375rem;
+  vertical-align: middle;
+}
+
+.fap-legend-hint { color: #8d8d8d; }
+
+.dark .fad-wrap {
+  background: #f5f5f5;
+  border: 1px solid #393939;
+  border-radius: 2px;
+}
+
+.dark .fap-comparison { border-top-color: #393939; }
+.dark .fap-comparison-divider { background-color: #393939; }
+.dark .fap-comparison-col--today  .fap-comparison-header { color: #ffb3b8; }
+.dark .fap-comparison-col--target .fap-comparison-header { color: #a7f0ba; }
+.dark .fap-comparison-item { color: #c6c6c6; }
+.dark .fap-comparison-col--today  .fap-comparison-item::before { color: #fa4d56; }
+.dark .fap-comparison-col--target .fap-comparison-item::before { color: #42be65; }
