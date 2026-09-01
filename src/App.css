@@ -676,3 +676,22 @@
 .dark .arch-foundation .section-vertical-line {
   background-color: #ff832b !important;
 }
+
+/* ─── Build version stamp (global header) ────────────────────────────────────
+   Bumped on every change so a stale dev server or cached bundle is visible
+   without digging through network requests. */
+.app-version {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.75rem;
+  font-family: 'IBM Plex Mono', 'IBM Plex Sans', monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+  color: #8d8d8d;
+  white-space: nowrap;
+  user-select: text;
+}
+
+@media (max-width: 671px) {
+  .app-version { display: none; }
+}
